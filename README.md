@@ -1,6 +1,6 @@
-# QA Brain Starter
+# QA Brain Lite
 
-**QA Brain Starter** is a lightweight scaffold showing how to build a **0→1 QA function** around Playwright, risk-tagged test packs, and an LLM evaluation harness.  
+**QA Brain Lite** is a lightweight scaffold showing how to build a **0→1 QA function** around Playwright, risk-tagged test packs, and an LLM evaluation harness.  
 
 It’s intentionally minimal — designed to demonstrate principles, not expose full IP. The complete [QA Brain](https://github.com/neej1979/qa-brain) system (private) expands on these ideas with replay-driven test generation, origin-aware grading, and self-healing selectors.  
 
@@ -67,7 +67,7 @@ npm run evals
 npm run qa:evals
 ```
 
-This runs the golden set in llm-evals/golden.yaml, scoring outputs (mocked in this starter).
+This runs the golden set in llm-evals/golden.yaml, scoring outputs (mocked in this repo ).
 Fails if the eval score drops below 0.95.
 
 ## Risk Tags
@@ -81,7 +81,7 @@ This allows targeted execution:
 The llm-evals/ folder includes:
 
 - golden.yaml → small golden set with expected behaviors
-- run_eval.ts → stub runner (uses mock outputs in this starter)
+- run_eval.ts → stub runner (uses mock outputs in this repo)
 
 In production, swap mock_output for real model responses and keep the same expected-check logic.
 
@@ -111,7 +111,7 @@ It describes:
 - 30/60/90 rollout plan
 
 ## About QA Brain
-This repo is a starter. The full QA Brain system (private) adds:
+This repo is an example only. The full QA Brain system (private) adds:
 
 - Replay-driven test generation
 - Origin-aware test quality grading
