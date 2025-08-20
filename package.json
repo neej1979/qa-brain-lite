@@ -8,7 +8,10 @@
     "test:ui": "playwright test --project=ui-chromium",
     "test:api": "playwright test --project=api",
     "report": "playwright show-report",
-    "evals": "ts-node llm-evals/run_eval.ts --min-score 0.95"
+    "evals": "ts-node llm-evals/run_eval.ts --min-score 0.95",
+    "qa:doctor": "python -m qa_brain.cli doctor",
+    "qa:run": "python -m qa_brain.cli run --pack smoke",
+    "qa:evals": "python -m qa_brain.cli evals --min-score 0.95"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.0",
