@@ -1,9 +1,19 @@
 {
+  "name": "qa-brain-starter",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
     "test:all": "playwright test",
     "test:smoke": "playwright test --grep \"@risk:high|@risk:medium\"",
     "test:ui": "playwright test --project=ui-chromium",
     "test:api": "playwright test --project=api",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "evals": "ts-node llm-evals/run_eval.ts --min-score 0.95"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2",
+    "yaml": "^2.5.1"
   }
 }
