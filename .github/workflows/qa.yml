@@ -1,0 +1,84 @@
+name: QA
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 2 * * *"   # 02:15 UTC nightly full run
+
+jobs:
+  pr-smoke:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+      API_BASE_URL: ${{ secrets.API_BASE_URL }}
+      E2E_USER: ${{ secrets.E2E_USER }}
+      E2E_PASS: ${{ secrets.E2E_PASS }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run PR smoke (high/medium risk only)
+        run: npx playwright test --grep "@risk:high|@risk:medium"
+
+      - name: Upload Playwright HTML report (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-pr
+          path: playwright-report
+          retention-days: 7
+
+  nightly-full:
+    if: github.event_name != 'pull_request'  # cron or manual
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+      API_BASE_URL: ${{ secrets.API_BASE_URL }}
+      E2E_USER: ${{ secrets.E2E_USER }}
+      E2E_PASS: ${{ secrets.E2E_PASS }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run all tests (ui + api)
+        run: npx playwright test
+
+      - name: Upload Playwright HTML report (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-nightly
+          path: playwright-report
+          retention-days: 14
+
+      - name: Fail build on any failures (JSON gate)
+        if: always()
+        run: |
+          node -e "
+            const fs=require('fs');
+            const p='playwright-report/results.json';
+            if(!fs.existsSync(p)){ process.exit(1); }
+            const r=JSON.parse(fs.readFileSync(p,'utf8'));
+            const failed=(r.suites||[]).some(s=>s.specs?.some(sp=>sp.ok===false));
+            if(failed){ console.error('❌ Failures detected by JSON gate'); process.exit(1); }
+            console.log('✅ JSON gate passed');
+          "
