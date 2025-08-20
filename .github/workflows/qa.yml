@@ -17,14 +17,24 @@ jobs:
       E2E_PASS: ${{ secrets.E2E_PASS }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with:
+          node-version: '20'
+          cache: 'npm'
+
       - name: Install deps
         run: npm ci
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
-      - name: Run PR smoke (high/medium risk only)
-        run: npx playwright test --grep "@risk:high|@risk:medium"
+
+      - name: Doctor (sanity checks)
+        run: npm run qa:doctor
+
+      - name: Run PR smoke (high/medium risk via CLI)
+        run: npm run qa:run -- --pack smoke
+
       - name: Upload Playwright HTML report (always)
         if: always()
         uses: actions/upload-artifact@v4
@@ -34,7 +44,7 @@ jobs:
           retention-days: 7
 
   nightly-full:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request'  # cron or manual
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -44,14 +54,24 @@ jobs:
       E2E_PASS: ${{ secrets.E2E_PASS }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with:
+          node-version: '20'
+          cache: 'npm'
+
       - name: Install deps
         run: npm ci
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
-      - name: Run all tests (ui + api)
-        run: npx playwright test
+
+      - name: Doctor (sanity checks)
+        run: npm run qa:doctor
+
+      - name: Run full suite (ui + api via CLI)
+        run: npm run qa:run -- --pack all
+
       - name: Upload Playwright HTML report (always)
         if: always()
         uses: actions/upload-artifact@v4
@@ -59,6 +79,7 @@ jobs:
           name: playwright-report-nightly
           path: playwright-report
           retention-days: 14
+
       - name: Fail build on any failures (JSON gate)
         if: always()
         run: |
@@ -76,12 +97,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with:
+          node-version: '20'
+          cache: 'npm'
+
       - name: Install deps
         run: npm ci
-      - name: Run LLM eval harness
-        run: npm run evals
+
+      - name: Run LLM eval harness (CLI)
+        run: npm run qa:evals
+
       - name: Upload eval results
         if: always()
         uses: actions/upload-artifact@v4
